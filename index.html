@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Şifre Kalkanı</title>
+<meta name="description" content="Şifrelerin nereden çalındığını bulmana yardım eden telefon uygulaması.">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Şifre Kalkanı">
+<style>
+:root{--bg:#0f172a;--kart:#1e293b;--yazi:#e2e8f0;--soluk:#94a3b8;--vurgu:#38bdf8;--iyi:#22c55e;--kotu:#ef4444;--uyari:#f59e0b;--cizgi:#334155}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--yazi);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom))}
+header{padding:20px 16px 8px}
+h1{margin:0;font-size:24px}
+h2{font-size:19px;margin:0 0 8px}
+p{margin:6px 0}
+.soluk{color:var(--soluk);font-size:14px}
+main{padding:0 16px;max-width:640px;margin:0 auto}
+.kart{background:var(--kart);border:1px solid var(--cizgi);border-radius:16px;padding:16px;margin:12px 0}
+input{width:100%;padding:14px;border-radius:12px;border:1px solid var(--cizgi);background:var(--bg);color:var(--yazi);font-size:17px}
+button{border:0;border-radius:12px;padding:14px 16px;font-size:16px;font-weight:600;cursor:pointer}
+.ana{background:var(--vurgu);color:#04121d;width:100%;margin-top:10px}
+.ikinci{background:transparent;color:var(--vurgu);border:1px solid var(--vurgu)}
+.sonuc{margin-top:12px;padding:12px;border-radius:12px;display:none}
+.sonuc.kotu{display:block;background:#450a0a;border:1px solid var(--kotu)}
+.sonuc.iyi{display:block;background:#052e16;border:1px solid var(--iyi)}
+.sonuc.uyari{display:block;background:#451a03;border:1px solid var(--uyari)}
+.sekme{display:none}.sekme.acik{display:block}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#020617;border-top:1px solid var(--cizgi);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;color:var(--soluk);padding:10px 4px;font-size:12px;font-weight:500;border-radius:0}
+nav button span{display:block;font-size:22px}
+nav button.acik{color:var(--vurgu)}
+.madde{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--cizgi);align-items:flex-start}
+.madde:first-of-type{border-top:0}
+.madde input{width:24px;height:24px;flex:none;margin-top:2px;accent-color:var(--iyi)}
+.madde b{display:block}
+.madde small{color:var(--soluk);display:block;margin-top:2px}
+.secici{display:flex;gap:8px;margin:8px 0}
+.secici button{flex:1;background:var(--bg);color:var(--soluk);border:1px solid var(--cizgi)}
+.secici button.acik{color:var(--vurgu);border-color:var(--vurgu)}
+.bar{height:8px;border-radius:4px;background:var(--cizgi);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;width:0;background:var(--iyi);transition:width .3s}
+.soru{padding:12px 0;border-top:1px solid var(--cizgi)}
+.soru:first-of-type{border-top:0}
+.soru .butonlar{display:flex;gap:8px;margin-top:8px}
+.soru .butonlar button{flex:1;padding:10px;background:var(--bg);color:var(--yazi);border:1px solid var(--cizgi)}
+.soru .butonlar button.secili{border-color:var(--vurgu);color:var(--vurgu)}
+ol,ul{padding-left:20px;margin:6px 0}
+li{margin:4px 0}
+a{color:var(--vurgu)}
+.kurulum{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛡️ Şifre Kalkanı</h1>
+  <p class="soluk">Şifrelerin nereden çalınıyor, birlikte bulalım. Hiçbir bilgin bir sunucuya kaydedilmez.</p>
+</header>
+<main>
+
+<!-- 1. ŞİFRE -->
+<section class="sekme acik" id="s-sifre">
+  <div class="kart">
+    <h2>Şifrem sızmış mı?</h2>
+    <p class="soluk">Şifren telefondan çıkmaz. Sadece şifreli özetinin ilk 5 karakteri gönderilir, kontrol telefonunda yapılır.</p>
+    <input id="sifre" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Şifreni yaz">
+    <button class="ana" id="sifreBtn">Kontrol et</button>
+    <div class="sonuc" id="sifreSonuc"></div>
+  </div>
+  <div class="kart">
+    <h2>E-postam hangi sızıntılarda var?</h2>
+    <p class="soluk">Have I Been Pwned sitesi açılır. Çıkan her site, şifrenin sızmış olabileceği bir yerdir.</p>
+    <input id="eposta" type="email" autocomplete="email" placeholder="ornek@gmail.com">
+    <button class="ana" id="epostaBtn">Sızıntıları göster</button>
+  </div>
+</section>
+
+<!-- 2. NEREDEN -->
+<section class="sekme" id="s-nereden">
+  <div class="kart">
+    <h2>Nereden çalındı?</h2>
+    <p class="soluk">Birkaç soruya cevap ver, en olası sebebi söyleyeyim.</p>
+    <div id="sorular"></div>
+    <button class="ana" id="analizBtn">Sonucu göster</button>
+    <div class="sonuc" id="analizSonuc"></div>
+  </div>
+</section>
+
+<!-- 3. TELEFON -->
+<section class="sekme" id="s-telefon">
+  <div class="kart">
+    <h2>Telefonumu kontrol et</h2>
+    <p class="soluk">Telefon güvenliği yüzünden hiçbir uygulama başka uygulamaları tarayamaz. Bu yüzden ayarlarda nereye bakacağını adım adım gösteriyorum.</p>
+    <div class="secici"><button data-os="android">Android</button><button data-os="ios">iPhone</button></div>
+    <div class="bar"><i id="telBar"></i></div>
+    <div id="telListe"></div>
+  </div>
+</section>
+
+<!-- 4. KURTARMA -->
+<section class="sekme" id="s-kurtar">
+  <div class="kart">
+    <h2>Hesaplarımı geri al ve koru</h2>
+    <p class="soluk">Sıra önemli. Virüs varken şifre değiştirirsen yenisi de çalınır.</p>
+    <div class="bar"><i id="kurBar"></i></div>
+    <div id="kurListe"></div>
+  </div>
+  <div class="kart kurulum" id="kurulumKart">
+    <h2>Bu uygulamayı telefona kur</h2>
+    <p id="kurulumYazi"></p>
+    <button class="ana" id="kurBtn" style="display:none">Ana ekrana ekle</button>
+  </div>
+</section>
+
+</main>
+
+<nav>
+  <button class="acik" data-s="s-sifre"><span>🔑</span>Kontrol</button>
+  <button data-s="s-nereden"><span>🔍</span>Nereden?</button>
+  <button data-s="s-telefon"><span>📱</span>Telefon</button>
+  <button data-s="s-kurtar"><span>✅</span>Kurtar</button>
+</nav>
+
+<script>
+const $ = s => document.querySelector(s);
+const depo = {
+  al(k, v){ try{ return JSON.parse(localStorage.getItem(k)) ?? v }catch{ return v } },
+  koy(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch{} }
+};
+
+// Sekmeler
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("acik", x === b));
+  document.querySelectorAll(".sekme").forEach(s => s.classList.toggle("acik", s.id === b.dataset.s));
+  window.scrollTo(0, 0);
+});
+
+function sonuc(el, tur, html){ el.className = "sonuc " + tur; el.innerHTML = html; }
+
+// ---- Şifre kontrolü (Pwned Passwords, k-anonimlik) ----
+async function sha1(metin){
+  const ozet = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(metin));
+  return [...new Uint8Array(ozet)].map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+}
+async function sifreKontrol(){
+  const el = $("#sifreSonuc"), sifre = $("#sifre").value;
+  if (!sifre) return;
+  sonuc(el, "uyari", "Kontrol ediliyor…");
+  try{
+    const h = await sha1(sifre), on = h.slice(0, 5), son = h.slice(5);
+    const r = await fetch("https://api.pwnedpasswords.com/range/" + on, {headers:{"Add-Padding":"true"}});
+    if (!r.ok) throw new Error(r.status);
+    const satir = (await r.text()).split("\n").find(l => l.split(":")[0].trim() === son);
+    const sayi = satir ? parseInt(satir.split(":")[1]) : 0;
+    if (sayi > 0) sonuc(el, "kotu", `<b>⚠️ Bu şifre sızıntılarda ${sayi.toLocaleString("tr-TR")} kez görülmüş!</b><br>Bu şifreyi kullandığın her hesapta hemen değiştir. Saldırganlar sızmış şifreleri her sitede dener.`);
+    else sonuc(el, "iyi", "<b>✅ Bu şifre bilinen sızıntılarda yok.</b><br>Yine de aynı şifreyi birden fazla sitede kullanma.");
+  }catch(e){
+    sonuc(el, "uyari", "İnternete bağlanılamadı. Bağlantını kontrol edip tekrar dene.");
+  }
+  $("#sifre").value = "";
+}
+$("#sifreBtn").onclick = sifreKontrol;
+$("#sifre").onkeydown = e => { if (e.key === "Enter") sifreKontrol(); };
+$("#epostaBtn").onclick = () => {
+  const e = $("#eposta").value.trim();
+  window.open("https://haveibeenpwned.com/account/" + encodeURIComponent(e), "_blank", "noopener");
+};
+
+// ---- Nereden çalındı? ----
+const SORULAR = [
+  {id:"ayni",   s:"Aynı şifreyi birden fazla sitede kullanıyor musun?", sebep:"tekrar"},
+  {id:"crack",  s:"Bilgisayarına crack'li oyun/program, hile, mod menü veya 'bedava' yazılım indirdin mi?", sebep:"virus"},
+  {id:"hepsi",  s:"Şifreni değiştirdikten sonra bile kısa sürede yine mi çalındı?", sebep:"virus"},
+  {id:"coklu",  s:"Aynı anda birden fazla hesabın (Discord, Steam, Instagram vb.) mı gitti?", sebep:"virus"},
+  {id:"link",   s:"Çalınmadan önce bir linke tıklayıp giriş yaptın mı? ('Bedava Nitro', 'oy ver', 'hesabın kapanacak' gibi)", sebep:"oltalama"},
+  {id:"kod",    s:"Birine bir kod, QR kod okuttun ya da ekranını paylaştın mı?", sebep:"dolandirici"},
+  {id:"baska",  s:"Başkasının telefonunda/bilgisayarında hesabına girdin mi?", sebep:"baska"},
+  {id:"apk",    s:"(Android) Play Store dışından APK yükledin mi?", sebep:"telefon"},
+  {id:"2fa",    s:"Hesaplarında iki adımlı doğrulama (2FA) açık mı?", sebep:"2fa", ters:true},
+];
+const SEBEPLER = {
+  virus:{p:0, b:"Bilgisayarında şifre çalan virüs (infostealer) olma ihtimali yüksek.",
+    a:"Bu virüsler tarayıcıdaki kayıtlı şifreleri ve oturum çerezlerini toplu olarak çalar. Bu yüzden birçok hesap aynı anda gider ve yeni şifre de çalınır. Önce bilgisayarı temizle (en garantisi Windows'u sıfırdan kurmak), sonra telefondan şifreleri değiştir. Bilgisayar için hazırladığım tarama programını da çalıştır."},
+  telefon:{p:0, b:"Telefonundaki bir uygulama şifreni çalıyor olabilir.", a:"'Telefon' sekmesindeki adımlarla Erişilebilirlik izni ve cihaz yöneticisi olan uygulamalara bak, tanımadıklarını kaldır."},
+  oltalama:{p:0, b:"Sahte bir giriş sayfasına şifreni yazmış olabilirsin (oltalama).", a:"Sahte sayfalar gerçeğinin aynısıdır ama adres farklıdır (ör. dlscord.com). Bir daha giriş yaparken sadece uygulamanın kendisinden ya da adresi kendin yazarak gir."},
+  dolandirici:{p:0, b:"Biri seni kandırıp hesabına girmiş olabilir.", a:"QR kodla giriş ve 'gelen kodu söyle' en yaygın hilelerdir. Hiçbir şirket senden kod istemez. Hesabının tüm oturumlarını kapat."},
+  tekrar:{p:0, b:"Aynı şifreyi birçok sitede kullanmak.", a:"Bir site sızınca saldırganlar o şifreyi her yerde dener. Her siteye farklı şifre kullan, Bitwarden gibi bir şifre yöneticisi bunu kolaylaştırır."},
+  baska:{p:0, b:"Başka bir cihazda açık kalan oturum veya kayıtlı şifre.", a:"Hesap ayarlarından 'tüm cihazlardan çıkış yap' de."},
+  "2fa":{p:0, b:"İki adımlı doğrulama kapalı.", a:"2FA açık olsa şifre çalınsa bile hesaba girilemezdi (çerez çalan virüsler hariç). Authenticator uygulamasıyla aç."},
+};
+const cevaplar = depo.al("cevaplar", {});
+$("#sorular").innerHTML = SORULAR.map(q => `
+  <div class="soru"><div>${q.s}</div>
+  <div class="butonlar"><button data-q="${q.id}" data-v="e">Evet</button><button data-q="${q.id}" data-v="h">Hayır</button><button data-q="${q.id}" data-v="b">Bilmiyorum</button></div></div>`).join("");
+function cevapBoya(){
+  document.querySelectorAll(".soru button").forEach(b => b.classList.toggle("secili", cevaplar[b.dataset.q] === b.dataset.v));
+}
+document.querySelectorAll(".soru button").forEach(b => b.onclick = () => {
+  cevaplar[b.dataset.q] = b.dataset.v; depo.koy("cevaplar", cevaplar); cevapBoya();
+});
+cevapBoya();
+$("#analizBtn").onclick = () => {
+  Object.values(SEBEPLER).forEach(x => x.p = 0);
+  SORULAR.forEach(q => {
+    const v = cevaplar[q.id];
+    if (q.ters ? v === "h" : v === "e") SEBEPLER[q.sebep].p += (q.sebep === "virus" ? 2 : 1);
+  });
+  const sirali = Object.values(SEBEPLER).filter(x => x.p > 0).sort((a, b) => b.p - a.p);
+  if (!sirali.length){
+    sonuc($("#analizSonuc"), "uyari", "Belirgin bir sebep çıkmadı. En sık sebep, eski bir site sızıntısındaki şifrenin başka yerde tekrar kullanılmasıdır. 'Kontrol' sekmesinden e-postana bak.");
+    return;
+  }
+  const tur = sirali[0] === SEBEPLER.virus ? "kotu" : "uyari";
+  sonuc($("#analizSonuc"), tur, "<b>En olası sebepler:</b><ol>" +
+    sirali.map(x => `<li><b>${x.b}</b><br><span class="soluk">${x.a}</span></li>`).join("") + "</ol>Sonra 'Kurtar' sekmesindeki adımları sırayla yap.");
+};
+
+// ---- Kontrol listeleri ----
+const TELEFON = {
+  android:[
+    ["Erişilebilirlik izinlerine bak", "Ayarlar > Erişilebilirlik > Yüklü uygulamalar. Bu izin ekrandaki her şeyi okuyabilir. Tanımadığın bir uygulama varsa kapat ve kaldır. Şifre çalan Android virüslerinin çoğu bunu kullanır."],
+    ["Cihaz yöneticisi uygulamalarına bak", "Ayarlar > Güvenlik > Cihaz yöneticisi uygulamaları (ya da arama çubuğuna 'yönetici' yaz). Google'ın 'Cihazımı bul' dışında tanımadığın bir şey olmamalı."],
+    ["Bilinmeyen kaynaklardan yüklemeyi kapat", "Ayarlar > Uygulamalar > Özel uygulama erişimi > Bilinmeyen uygulamaları yükle. Her uygulama için 'İzin verilmiyor' olsun."],
+    ["Play Protect taraması yap", "Play Store > profil resmin > Play Protect > Tara. Zararlı uygulama bulursa kaldır."],
+    ["Uygulama listesini gözden geçir", "Ayarlar > Uygulamalar. Hatırlamadığın, simgesi olmayan ya da 'Sistem güncellemesi', 'Ayarlar' gibi sahte isimli uygulamaları kaldır."],
+    ["Google hesabındaki cihazlara bak", "myaccount.google.com > Güvenlik > Cihazlarınız. Tanımadığın cihazdan çıkış yap."],
+    ["Telefonu güncelle", "Ayarlar > Sistem > Yazılım güncelleme."],
+  ],
+  ios:[
+    ["Tanımadığın profil var mı?", "Ayarlar > Genel > VPN ve Cihaz Yönetimi. Okulun/işin vermediği bir profil varsa kaldır. Sahte profiller trafiğini okuyabilir."],
+    ["Apple Kimliği cihazlarına bak", "Ayarlar > [Adın] en alttaki cihaz listesi. Tanımadığın cihazı 'Hesaptan Kaldır'."],
+    ["Güvenlik Denetimi'ni çalıştır", "Ayarlar > Gizlilik ve Güvenlik > Güvenlik Denetimi. Seninle paylaşılan konum ve erişimleri gösterir."],
+    ["Sızmış şifre uyarılarına bak", "Ayarlar > Parolalar (veya Parolalar uygulaması) > Güvenlik Önerileri. iPhone sızıntılarda gördüğü şifreleri burada listeler."],
+    ["Takvim aboneliklerini temizle", "Ayarlar > Takvim > Hesaplar > Abone Olunan Takvimler. Tanımadığın takvim spam ve sahte link gönderebilir."],
+    ["iOS'u güncelle", "Ayarlar > Genel > Yazılım Güncelleme."],
+    ["Jailbreak yapılmadığından emin ol", "Cydia/Sileo gibi tanımadığın bir uygulama varsa telefon jailbreak'li olabilir ve çok daha savunmasızdır."],
+  ],
+};
+const KURTAR = [
+  ["1. Önce cihazları temizle", "Bilgisayarda tarama programını çalıştır, şüpheli şeyleri kaldır. Emin değilsen Windows'u sıfırla. Telefonda 'Telefon' sekmesini bitir."],
+  ["2. E-posta şifreni değiştir", "Her şeyin anahtarı e-postan. Temiz bir cihazdan, daha önce hiç kullanmadığın bir şifreyle değiştir."],
+  ["3. E-postada 2FA aç", "Google/Microsoft Authenticator kullan. SMS'ten daha güvenlidir."],
+  ["4. 'Tüm cihazlardan çıkış yap'", "Çalınan oturum çerezleri şifre değişse bile çalışır. Her önemli hesapta tüm oturumları kapat."],
+  ["5. Gmail yönlendirme kurallarına bak", "Gmail > Ayarlar > Yönlendirme ve Filtreler. Saldırganlar e-postalarını kendilerine yönlendirebilir."],
+  ["6. Diğer hesapların şifrelerini değiştir", "Discord, Steam, Instagram, banka... Her birine farklı şifre."],
+  ["7. Şifre yöneticisi kur", "Bitwarden ücretsiz. Tüm şifreleri o hatırlar, sen sadece bir ana şifre bilirsin."],
+  ["8. Tarayıcıya şifre kaydetmeyi bırak", "Virüsler ilk olarak tarayıcıdaki kayıtlı şifreleri çalar. Şifre yöneticisi daha güvenlidir."],
+  ["9. Crack/hile indirmeyi bırak", "Şifre çalan virüslerin en büyük kaynağı bunlar."],
+];
+function listeCiz(kap, bar, anahtar, maddeler){
+  const tik = depo.al(anahtar, {});
+  kap.innerHTML = maddeler.map(([b, a], i) => `<label class="madde"><input type="checkbox" data-i="${i}" ${tik[i] ? "checked" : ""}><div><b>${b}</b><small>${a}</small></div></label>`).join("");
+  const guncelle = () => { bar.style.width = (Object.values(tik).filter(Boolean).length / maddeler.length * 100) + "%"; };
+  kap.querySelectorAll("input").forEach(c => c.onchange = () => { tik[c.dataset.i] = c.checked; depo.koy(anahtar, tik); guncelle(); });
+  guncelle();
+}
+function osSec(os){
+  document.querySelectorAll("[data-os]").forEach(b => b.classList.toggle("acik", b.dataset.os === os));
+  listeCiz($("#telListe"), $("#telBar"), "tel-" + os, TELEFON[os]);
+}
+document.querySelectorAll("[data-os]").forEach(b => b.onclick = () => osSec(b.dataset.os));
+const iOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+osSec(iOS ? "ios" : "android");
+listeCiz($("#kurListe"), $("#kurBar"), "kurtar", KURTAR);
+
+// ---- Ana ekrana ekleme ----
+const kurulu = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+let kurulumOlayi = null;
+if (!kurulu){
+  $("#kurulumKart").style.display = "block";
+  $("#kurulumYazi").textContent = iOS
+    ? "Safari'de alttaki Paylaş (□↑) düğmesine bas, sonra 'Ana Ekrana Ekle'yi seç."
+    : "Chrome menüsünden (⋮) 'Uygulamayı yükle' veya 'Ana ekrana ekle'yi seç.";
+}
+addEventListener("beforeinstallprompt", e => {
+  e.preventDefault(); kurulumOlayi = e; $("#kurBtn").style.display = "block";
+});
+$("#kurBtn").onclick = async () => { if (kurulumOlayi){ kurulumOlayi.prompt(); kurulumOlayi = null; $("#kurBtn").style.display = "none"; } };
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
