@@ -3,7 +3,7 @@
 Şifrelerin nereden çalındığını bulmana ve hesaplarını geri almana yardım eden uygulama. **iPhone ve Android'de** çalışır, ayrıca bir **bilgisayar tarama programı** da içerir.
 
 ## Telefona kurulum
-1. Telefonunda uygulamanın adresini aç: `https://<kullanıcı-adın>.github.io/sifre-kalkani/`
+1. Telefonunda uygulamanın adresini aç: **https://mustafacandere.github.io/sifre-kalkan-/**
 2. **iPhone (Safari):** Paylaş (□↑) → **Ana Ekrana Ekle**
 3. **Android (Chrome):** ⋮ menü → **Uygulamayı yükle**
 
