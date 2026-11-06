@@ -56,6 +56,18 @@ ol,ul{padding-left:20px;margin:6px 0}
 li{margin:4px 0}
 a{color:var(--vurgu)}
 .kurulum{display:none}
+.guc{font-size:14px;margin-top:8px;color:var(--soluk)}
+.uret{font:600 19px/1.4 ui-monospace,Menlo,Consolas,monospace;word-break:break-all;background:var(--bg);border:1px solid var(--cizgi);border-radius:12px;padding:14px;margin:10px 0;min-height:56px}
+.satir{display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap}
+.satir label{display:flex;gap:6px;align-items:center;font-size:15px}
+.satir input[type=range]{flex:1;padding:0}
+.satir input[type=checkbox]{width:20px;height:20px;accent-color:var(--vurgu)}
+.ikiliBtn{display:flex;gap:8px}.ikiliBtn button{flex:1}
+.hizli a{display:block;padding:12px 0;border-top:1px solid var(--cizgi);text-decoration:none}
+.hizli a:first-of-type{border-top:0}
+.hizli a b{color:var(--yazi);display:block}
+.hizli a small{color:var(--soluk)}
+.isaret{margin:4px 0;padding-left:4px}
 </style>
 </head>
 <body>
@@ -71,6 +83,8 @@ a{color:var(--vurgu)}
     <h2>Şifrem sızmış mı?</h2>
     <p class="soluk">Şifren telefondan çıkmaz. Sadece şifreli özetinin ilk 5 karakteri gönderilir, kontrol telefonunda yapılır.</p>
     <input id="sifre" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Şifreni yaz">
+    <div class="bar"><i id="gucBar"></i></div>
+    <div class="guc" id="gucYazi">Yazdıkça şifrenin gücünü burada göreceksin (telefonunda hesaplanır).</div>
     <button class="ana" id="sifreBtn">Kontrol et</button>
     <div class="sonuc" id="sifreSonuc"></div>
   </div>
@@ -104,13 +118,41 @@ a{color:var(--vurgu)}
   </div>
 </section>
 
-<!-- 4. KURTARMA -->
+<!-- 4. ARAÇLAR -->
+<section class="sekme" id="s-arac">
+  <div class="kart">
+    <h2>Bu link güvenli mi?</h2>
+    <p class="soluk">Sana gelen linki tıklamadan buraya yapıştır. Sahte giriş sayfalarının (ör. dlscord.com, steamcommunlty.ru) izlerine bakarım. Link açılmaz, kontrol telefonunda yapılır.</p>
+    <input id="link" type="url" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="https://...">
+    <button class="ana" id="linkBtn">Kontrol et</button>
+    <div class="sonuc" id="linkSonuc"></div>
+  </div>
+  <div class="kart">
+    <h2>Güçlü şifre üret</h2>
+    <p class="soluk">Telefonunda rastgele üretilir, hiçbir yere gönderilmez. Her hesap için ayrı bir tane üret.</p>
+    <div class="uret" id="uretilen"></div>
+    <div class="satir"><span>Uzunluk: <b id="uzunlukYazi">16</b></span><input type="range" id="uzunluk" min="10" max="32" value="16"></div>
+    <div class="satir">
+      <label><input type="checkbox" id="opSembol" checked> Sembol (!@#)</label>
+      <label><input type="checkbox" id="opRakam" checked> Rakam</label>
+      <label><input type="checkbox" id="opKarisik" checked> Karışacak harfleri çıkar (l, 1, O, 0)</label>
+    </div>
+    <div class="ikiliBtn"><button class="ikinci" id="yeniBtn">Yeni üret</button><button class="ana" style="margin-top:0" id="kopyalaBtn">Kopyala</button></div>
+  </div>
+</section>
+
+<!-- 5. KURTARMA -->
 <section class="sekme" id="s-kurtar">
   <div class="kart">
     <h2>Hesaplarımı geri al ve koru</h2>
     <p class="soluk">Sıra önemli. Virüs varken şifre değiştirirsen yenisi de çalınır.</p>
     <div class="bar"><i id="kurBar"></i></div>
     <div id="kurListe"></div>
+  </div>
+  <div class="kart">
+    <h2>Hesaplarına hızlı git</h2>
+    <p class="soluk">Şifre değiştirme, 2FA ve "tüm cihazlardan çıkış" sayfaları. Bu linkler resmi sitelerdir.</p>
+    <div class="hizli" id="hizliListe"></div>
   </div>
   <div class="kart kurulum" id="kurulumKart">
     <h2>Bu uygulamayı telefona kur</h2>
@@ -125,6 +167,7 @@ a{color:var(--vurgu)}
   <button class="acik" data-s="s-sifre"><span>🔑</span>Kontrol</button>
   <button data-s="s-nereden"><span>🔍</span>Nereden?</button>
   <button data-s="s-telefon"><span>📱</span>Telefon</button>
+  <button data-s="s-arac"><span>🧰</span>Araçlar</button>
   <button data-s="s-kurtar"><span>✅</span>Kurtar</button>
 </nav>
 
@@ -269,6 +312,161 @@ document.querySelectorAll("[data-os]").forEach(b => b.onclick = () => osSec(b.da
 const iOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 osSec(iOS ? "ios" : "android");
 listeCiz($("#kurListe"), $("#kurBar"), "kurtar", KURTAR);
+
+// ---- Şifre gücü (yerel tahmin) ----
+const YAYGIN = ["sifre","şifre","parola","password","qwerty","asdf","zxcv","123456","654321","111111","abc123","iloveyou","seviyorum","galatasaray","fenerbahce","fenerbahçe","besiktas","beşiktaş","trabzon","admin","welcome","dragon","monkey","football","futbol","istanbul","ankara","izmir","turkiye","türkiye","askim","aşkım","canim","canım"];
+function gucHesapla(s){
+  if (!s) return null;
+  let havuz = 0;
+  if (/[a-zçğıöşü]/.test(s)) havuz += 29;
+  if (/[A-ZÇĞİÖŞÜ]/.test(s)) havuz += 29;
+  if (/\d/.test(s)) havuz += 10;
+  if (/[^a-zA-Z0-9çğıöşüÇĞİÖŞÜ]/.test(s)) havuz += 32;
+  let bit = s.length * Math.log2(havuz || 1);
+  const notlar = [];
+  const kucuk = s.toLocaleLowerCase("tr-TR");
+  if (YAYGIN.some(w => kucuk.includes(w))){ bit -= 25; notlar.push("çok bilinen bir kelime/takım/şehir içeriyor"); }
+  if (/(19|20)\d\d/.test(s)){ bit -= 10; notlar.push("bir yıl içeriyor (doğum yılı tahmin edilir)"); }
+  if (/(.)\1\1/.test(s)){ bit -= 10; notlar.push("aynı karakter art arda tekrar ediyor"); }
+  if (/(0123|1234|2345|3456|4567|5678|6789|abcd|qwer|asdf)/i.test(s)){ bit -= 15; notlar.push("sıralı karakterler var (1234, abcd)"); }
+  if (/^[a-zçğıöşü]+\d{1,4}$/i.test(s)){ bit -= 10; notlar.push("'kelime+sayı' kalıbı tahmin edilir"); }
+  if (s.length < 10) notlar.push("en az 12 karakter olmalı");
+  bit = Math.max(0, bit);
+  const seviye = bit < 35 ? ["Çok zayıf", "var(--kotu)", 15] : bit < 55 ? ["Zayıf", "var(--uyari)", 40] : bit < 75 ? ["İyi", "var(--vurgu)", 70] : ["Çok güçlü", "var(--iyi)", 100];
+  return {seviye, notlar};
+}
+$("#sifre").addEventListener("input", () => {
+  const g = gucHesapla($("#sifre").value), bar = $("#gucBar"), yazi = $("#gucYazi");
+  if (!g){ bar.style.width = "0"; yazi.textContent = "Yazdıkça şifrenin gücünü burada göreceksin (telefonunda hesaplanır)."; return; }
+  bar.style.width = g.seviye[2] + "%"; bar.style.background = g.seviye[1];
+  yazi.innerHTML = `<b style="color:${g.seviye[1]}">${g.seviye[0]}</b>` + (g.notlar.length ? " · " + g.notlar.join(", ") : "");
+});
+const eskiKontrol = $("#sifreBtn").onclick;
+$("#sifreBtn").onclick = async () => { await eskiKontrol(); $("#sifre").dispatchEvent(new Event("input")); };
+
+// ---- Link kontrolü ----
+const MARKALAR = {
+  discord:["discord.com","discord.gg","discordapp.com","discord.media","discordapp.net","discord.new","discord.gift"],
+  steam:["steampowered.com","steamcommunity.com","steamgames.com","steamstatic.com","steam.tv"],
+  steamcommunity:["steamcommunity.com"], steampowered:["steampowered.com"],
+  instagram:["instagram.com"], facebook:["facebook.com","fb.com","fb.me","messenger.com"],
+  google:["google.com","google.com.tr","youtube.com","gmail.com","goo.gl","youtu.be"], gmail:["gmail.com","google.com"], youtube:["youtube.com","youtu.be"],
+  microsoft:["microsoft.com","live.com","outlook.com","office.com","xbox.com","microsoftonline.com"], outlook:["outlook.com","live.com","microsoft.com"], xbox:["xbox.com"],
+  apple:["apple.com","icloud.com"], icloud:["icloud.com","apple.com"],
+  roblox:["roblox.com","rbxcdn.com"], epicgames:["epicgames.com","unrealengine.com","fortnite.com"], fortnite:["fortnite.com","epicgames.com"],
+  riotgames:["riotgames.com","leagueoflegends.com","playvalorant.com"], valorant:["playvalorant.com","riotgames.com"],
+  twitch:["twitch.tv"], tiktok:["tiktok.com"], twitter:["twitter.com","x.com","t.co"], whatsapp:["whatsapp.com","wa.me","whatsapp.net"],
+  telegram:["telegram.org","t.me"], netflix:["netflix.com"], spotify:["spotify.com"], paypal:["paypal.com"], binance:["binance.com","binance.tr"],
+  edevlet:["turkiye.gov.tr"], ziraat:["ziraatbank.com.tr"], isbank:["isbank.com.tr"], garantibbva:["garantibbva.com.tr"],
+  akbank:["akbank.com"], yapikredi:["yapikredi.com.tr"], papara:["papara.com"], trendyol:["trendyol.com"], hepsiburada:["hepsiburada.com"],
+  pubg:["pubg.com","pubgmobile.com"], minecraft:["minecraft.net","mojang.com"], playstation:["playstation.com"], nvidia:["nvidia.com"]
+};
+const IKILI_UZANTI = ["com.tr","gov.tr","org.tr","net.tr","edu.tr","co.uk","com.br","co.jp","com.au"];
+const KISALTICI = ["bit.ly","tinyurl.com","cutt.ly","shorturl.at","is.gd","rb.gy","ow.ly","t.ly","tiny.cc","rebrand.ly","s.id","v.gd","linktr.ee","goo.su","clck.ru"];
+const RISKLI_UZANTI = ["ru","tk","ml","ga","cf","gq","xyz","top","click","gift","zip","mov","icu","cfd","sbs","rest","live","online","site","fun","buzz","monster","shop","link","info"];
+const YEM = /(free|gift|nitro|giveaway|bedava|hediye|ucretsiz|ücretsiz|cekilis|çekiliş|robux|vbucks|skin|airdrop|claim|verify|dogrula|doğrula|login|signin|giris|giriş|secure|guvenlik|güvenlik|account|hesap|support|destek|odul|ödül|bonus)/i;
+function anaAlan(host){
+  const p = host.split(".");
+  const son2 = p.slice(-2).join(".");
+  return IKILI_UZANTI.includes(son2) ? p.slice(-3).join(".") : son2;
+}
+function benzerlik(a, b){ // Levenshtein mesafesi
+  const d = Array.from({length:a.length + 1}, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+const normal = t => t.replace(/rn/g, "m").replace(/vv/g, "w").replace(/[1|!]/g, "l").replace(/0/g, "o").replace(/3/g, "e").replace(/5/g, "s").replace(/-/g, "");
+function linkAnaliz(girdi){
+  let metin = girdi.trim();
+  if (!metin) return null;
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(metin)) metin = "https://" + metin;
+  let u;
+  try{ u = new URL(metin); }catch{ return {puan:99, isaretler:["Bu geçerli bir link değil."]}; }
+  const host = u.hostname.toLowerCase().replace(/\.$/, "");
+  const alan = anaAlan(host);
+  const etiket = alan.split(".")[0];
+  const isaretler = []; let puan = 0; let resmi = null;
+  for (const [marka, alanlar] of Object.entries(MARKALAR)){
+    if (alanlar.includes(alan)){ resmi = marka; break; }
+  }
+  if (!["http:", "https:"].includes(u.protocol)){ puan += 3; isaretler.push(`Bu bir web linki değil (${u.protocol}). Uygulama veya dosya açtırmaya çalışıyor olabilir.`); }
+  if (u.username || /@/.test(girdi.split(/[/?#]/).slice(0, 3).join("/"))){ puan += 4; isaretler.push("Linkte '@' işareti var. '@' öncesi kısım seni kandırmak içindir, gerçek adres '@' sonrasıdır."); }
+  if (host.includes("xn--")){ puan += 4; isaretler.push("Adreste görünüşü aynı ama farklı harfler var (punycode). Klasik taklit site hilesi."); }
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.startsWith("[")){ puan += 3; isaretler.push("Adres bir site adı değil, çıplak IP numarası. Gerçek şirketler böyle link göndermez."); }
+  if (KISALTICI.includes(alan) || KISALTICI.includes(host)){ puan += 2; isaretler.push("Bu bir link kısaltıcı. Gerçek adresi gizliyor, açmadan önce kimden geldiğinden emin ol."); }
+  if (!resmi){
+    for (const [marka, alanlar] of Object.entries(MARKALAR)){
+      const resmiEtiketler = alanlar.map(a => a.split(".")[0]);
+      const n = normal(etiket);
+      const yakin = resmiEtiketler.some(r => r.length >= 6 && n !== r && benzerlik(n, r) <= (r.length > 8 ? 2 : 1));
+      if (marka.length >= 4 && new RegExp("(^|[.-])" + marka).test(host)){
+        puan += 4; isaretler.push(`Adreste "${marka}" geçiyor ama resmi sitesi değil. Resmi adres: ${alanlar[0]}`); break;
+      }
+      if (yakin || resmiEtiketler.includes(n) && etiket !== n){
+        puan += 5; isaretler.push(`"${alan}" adresi ${alanlar[0]} sitesini taklit ediyor gibi (harfler değiştirilmiş). Kesinlikle giriş yapma!`); break;
+      }
+    }
+  }
+  const tld = host.split(".").pop();
+  if (!resmi && RISKLI_UZANTI.includes(tld)){ puan += 1; isaretler.push(`".${tld}" uzantısı dolandırıcı sitelerde sık kullanılır.`); }
+  if (!resmi && YEM.test(host + u.pathname)){ puan += 2; isaretler.push("Linkte 'bedava/hediye/giriş/doğrula' gibi tuzak kelimeler var."); }
+  if (u.protocol === "http:"){ puan += 1; isaretler.push("Bağlantı şifresiz (http). Buraya şifre yazma."); }
+  if (!resmi && host.split(".").length > 4){ puan += 1; isaretler.push("Adres çok fazla parçadan oluşuyor. Asıl site adı en sağdaki kısımdır: " + alan); }
+  return {puan, isaretler, resmi, alan};
+}
+$("#linkBtn").onclick = () => {
+  const r = linkAnaliz($("#link").value), el = $("#linkSonuc");
+  if (!r) return;
+  const liste = r.isaretler.map(i => `<div class="isaret">• ${i}</div>`).join("");
+  if (r.puan >= 4) sonuc(el, "kotu", `<b>⛔ Tehlikeli görünüyor. Açma, giriş yapma!</b>${liste}<p class="soluk">Bu linki sana bir arkadaşın attıysa onun hesabı çalınmış olabilir. Kendisine başka yoldan haber ver.</p>`);
+  else if (r.puan >= 2) sonuc(el, "uyari", `<b>⚠️ Şüpheli. Dikkatli ol.</b>${liste}`);
+  else if (r.resmi) sonuc(el, "iyi", `<b>✅ Bu resmi bir adres: ${r.alan}</b>${liste}<p class="soluk">Yine de giriş yapmadan önce adres çubuğunda aynı adresi gördüğünden emin ol.</p>`);
+  else sonuc(el, "uyari", `<b>Belirgin bir tehlike izi yok, ama bu siteyi tanımıyorum: ${r.alan}</b>${liste}<p class="soluk">Tanımadığın sitelere şifreni yazma. Hesabına girmek için uygulamanın kendisini kullan.</p>`);
+};
+$("#link").onkeydown = e => { if (e.key === "Enter") $("#linkBtn").click(); };
+
+// ---- Şifre üretici ----
+function rastgele(n){ // 0..n-1 arası, eşit dağılımlı
+  const sinir = Math.floor(0x100000000 / n) * n, a = new Uint32Array(1);
+  do crypto.getRandomValues(a); while (a[0] >= sinir);
+  return a[0] % n;
+}
+function sifreUret(){
+  const karisik = $("#opKarisik").checked;
+  let gruplar = [karisik ? "abcdefghijkmnpqrstuvwxyz" : "abcdefghijklmnopqrstuvwxyz", karisik ? "ABCDEFGHJKLMNPQRSTUVWXYZ" : "ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+  if ($("#opRakam").checked) gruplar.push(karisik ? "23456789" : "0123456789");
+  if ($("#opSembol").checked) gruplar.push("!@#$%&*?-_=+");
+  const hepsi = gruplar.join(""), n = +$("#uzunluk").value;
+  const k = gruplar.map(g => g[rastgele(g.length)]); // her gruptan en az bir tane
+  while (k.length < n) k.push(hepsi[rastgele(hepsi.length)]);
+  for (let i = k.length - 1; i > 0; i--){ const j = rastgele(i + 1); [k[i], k[j]] = [k[j], k[i]]; }
+  $("#uretilen").textContent = k.join("");
+  $("#uzunlukYazi").textContent = n;
+}
+["#uzunluk", "#opSembol", "#opRakam", "#opKarisik"].forEach(s => $(s).addEventListener("input", sifreUret));
+$("#yeniBtn").onclick = sifreUret;
+$("#kopyalaBtn").onclick = async () => {
+  try{ await navigator.clipboard.writeText($("#uretilen").textContent); $("#kopyalaBtn").textContent = "Kopyalandı ✓"; }
+  catch{ $("#kopyalaBtn").textContent = "Kopyalanamadı, elle seç"; }
+  setTimeout(() => $("#kopyalaBtn").textContent = "Kopyala", 2000);
+};
+sifreUret();
+
+// ---- Hızlı linkler ----
+const HIZLI = [
+  ["Google / Gmail", "https://myaccount.google.com/security", "Şifre, 2 adımlı doğrulama, 'Cihazlarınız' bölümünden tanımadığın cihazdan çıkış."],
+  ["Microsoft / Outlook / Xbox", "https://account.microsoft.com/security", "Şifre değiştir, iki adımlı doğrulama, oturum etkinliği."],
+  ["Instagram", "https://accountscenter.instagram.com/password_and_security/", "Şifre, 2FA ve 'Giriş yaptığın yerler'den çıkış."],
+  ["Facebook", "https://accountscenter.facebook.com/password_and_security", "Şifre, 2FA ve 'Giriş yaptığın yerler'."],
+  ["Steam", "https://store.steampowered.com/twofactor/manage", "Steam Guard ve 'Diğer tüm cihazların yetkisini kaldır'."],
+  ["Discord", "https://discord.com/app", "Kullanıcı Ayarları > Cihazlar > 'Bilinen tüm cihazlardan çıkış yap', sonra Hesabım > 2FA."],
+  ["Roblox", "https://www.roblox.com/my/account#!/security", "2 Adımlı Doğrulama ve 'Diğer tüm oturumlardan çıkış'."],
+  ["Epic Games / Fortnite", "https://www.epicgames.com/account/password", "Şifre ve 2FA."],
+  ["Apple Kimliği", "https://account.apple.com", "Şifre ve cihaz listesi."],
+];
+$("#hizliListe").innerHTML = HIZLI.map(([ad, url, a]) => `<a href="${url}" target="_blank" rel="noopener"><b>${ad} ↗</b><small>${a}</small></a>`).join("");
 
 // ---- Ana ekrana ekleme ----
 const kurulu = matchMedia("(display-mode: standalone)").matches || navigator.standalone;

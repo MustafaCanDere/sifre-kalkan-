@@ -12,8 +12,9 @@ Ana ekrandan normal bir uygulama gibi açılır, internet yokken de çalışır.
 ## Ne yapar?
 - **Kontrol:** Şifren sızıntılarda var mı? Şifren telefondan çıkmaz (sadece şifreli özetinin ilk 5 karakteri gönderilir, [k-anonimlik](https://haveibeenpwned.com/API/v3#PwnedPasswords)). E-postanın hangi sızıntılarda olduğunu gösterir.
 - **Nereden?:** Birkaç soruyla şifrenin en olası çalınma yolunu bulur (virüs, oltalama, aynı şifre, dolandırıcılık...).
+- **Araçlar:** Sana gelen linkin sahte giriş sayfası olup olmadığını kontrol eder (dlscord.com, steamcommunlty.ru gibi taklitler, '@' hilesi, link kısaltıcılar). Güçlü ve rastgele şifre üretir.
 - **Telefon:** Android ve iPhone'da şifre çalan uygulamaların izlerini ayarlarda nerede arayacağını adım adım gösterir.
-- **Kurtar:** Hesapları doğru sırayla geri alma ve koruma listesi.
+- **Kurtar:** Hesapları doğru sırayla geri alma listesi ve Google, Instagram, Steam, Discord, Roblox gibi hesapların güvenlik sayfalarına hızlı linkler.
 
 Hiçbir bilgin bir sunucuya kaydedilmez. Kontrol listesindeki işaretlerin sadece kendi telefonunda saklanır.
 
