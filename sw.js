@@ -1,6 +1,6 @@
 // Uygulama dosyalarını önbelleğe alır, internet yokken de açılır.
 // Şifre kontrolü isteği önbelleğe alınmaz.
-const SURUM = "sifre-kalkani-v1";
+const SURUM = "sifre-kalkani-v2";
 const DOSYALAR = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 self.addEventListener("install", e => e.waitUntil(caches.open(SURUM).then(c => c.addAll(DOSYALAR)).then(() => self.skipWaiting())));
 self.addEventListener("activate", e => e.waitUntil(
